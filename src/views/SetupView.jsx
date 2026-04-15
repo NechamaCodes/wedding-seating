@@ -106,7 +106,7 @@ export default function SetupView() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         gap: '1.25rem',
         maxWidth: 1200,
         margin: '0 auto',

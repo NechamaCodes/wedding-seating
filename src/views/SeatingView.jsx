@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core'
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core'
 import useStore from '../store/useStore'
 import { validateAssignment, getMustSitWarnings, getSeatingIssues } from '../utils/validation'
 import GuestList from '../components/guests/GuestList'
@@ -9,7 +9,7 @@ import DraggableGuest from '../components/dnd/DraggableGuest'
 import DroppableTable from '../components/dnd/DroppableTable'
 import ValidationToast from '../components/ui/ValidationToast'
 
-function DroppableSidebar({ children }) {
+function DroppableSidebar({ children, style = {} }) {
   const { setNodeRef, isOver } = useDroppable({ id: 'sidebar' })
   return (
     <aside
@@ -27,6 +27,7 @@ function DroppableSidebar({ children }) {
         transition: 'background 0.15s',
         outline: isOver ? '2px dashed var(--purple-mid)' : 'none',
         outlineOffset: '-4px',
+        ...style,
       }}
     >
       {children}
@@ -44,9 +45,12 @@ export default function SeatingView() {
   const [activeGuest, setActiveGuest] = useState(null)
   const [toastMessages, setToastMessages] = useState(null)
   const [celebrationDismissed, setCelebrationDismissed] = useState(false)
+  const [flashTableId, setFlashTableId] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   const issues = getSeatingIssues(state)
@@ -95,6 +99,8 @@ export default function SeatingView() {
     }
 
     assignGuestToTable(guestId, tableId)
+    setFlashTableId(tableId)
+    setTimeout(() => setFlashTableId(null), 600)
   }
 
   const dismissToast = useCallback(() => setToastMessages(null), [])
@@ -132,9 +138,25 @@ export default function SeatingView() {
         </div>
       )}
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <DroppableSidebar>
+          {/* Mobile toggle button */}
+          <button
+            className="mobile-only"
+            onClick={() => setSidebarOpen((o) => !o)}
+            style={{
+              position: 'absolute', bottom: '1rem', right: '1rem',
+              zIndex: 50, width: 48, height: 48, borderRadius: '50%',
+              background: 'var(--purple-mid)', color: '#fff',
+              border: 'none', fontSize: '1.1rem', boxShadow: 'var(--shadow)',
+              cursor: 'pointer',
+            }}
+            title={sidebarOpen ? 'Hide guest list' : 'Show guest list'}
+          >
+            {sidebarOpen ? '✕' : '👥'}
+          </button>
+
+          <DroppableSidebar style={sidebarOpen ? {} : { display: 'none' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
               Guests
             </div>
@@ -161,7 +183,33 @@ export default function SeatingView() {
               </div>
             )}
 
-            <TableGrid DroppableWrapper={DroppableTable} />
+            {/* Progress bar */}
+          {totalGuests > 0 && (
+            <div style={{
+              padding: '0.5rem 1.25rem',
+              borderBottom: '1px solid var(--border)',
+              background: 'var(--surface)',
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+            }}>
+              <div style={{
+                flex: 1, height: 6, borderRadius: 999,
+                background: 'var(--silver-light)', overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${(seatedGuests / totalGuests) * 100}%`,
+                  borderRadius: 999,
+                  background: allSeated ? 'var(--success)' : 'var(--purple-mid)',
+                  transition: 'width 0.4s ease',
+                }} />
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {seatedGuests} / {totalGuests} seated
+              </span>
+            </div>
+          )}
+
+          <TableGrid DroppableWrapper={DroppableTable} flashTableId={flashTableId} />
           </main>
 
           <DragOverlay>

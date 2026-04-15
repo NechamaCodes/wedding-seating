@@ -48,16 +48,19 @@ function EmptySeat({ style }) {
   return <div title="Empty seat" style={style} />
 }
 
-export default function TableCard({ table, isOver = false, onClick, droppableProps = {} }) {
+export default function TableCard({ table, isOver = false, flash = false, onClick, droppableProps = {}, zoom = 1 }) {
   const [hovered, setHovered] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(table.name)
   const guests = useStore((s) => s.guests)
+  const updateTable = useStore((s) => s.updateTable)
   const constraints = useStore((s) => s.constraints)
   const seatedGuests = table.guestIds.map((id) => guests.find((g) => g.id === id)).filter(Boolean)
   const emptySeats = Math.max(0, table.seatCount - seatedGuests.length)
 
   const isRound = table.shape === 'round'
-  const size = isRound ? 140 : 160
-  const height = isRound ? 140 : 110
+  const size = Math.round((isRound ? 140 : 160) * zoom)
+  const height = Math.round((isRound ? 140 : 110) * zoom)
   const isFull = seatedGuests.length >= table.seatCount
   const isEmpty = seatedGuests.length === 0
   const fillRatio = seatedGuests.length / table.seatCount
@@ -130,7 +133,8 @@ export default function TableCard({ table, isOver = false, onClick, droppablePro
   // Table surface border/bg based on state
   let tableBorderColor = 'var(--border)'
   let tableBg = 'var(--surface)'
-  if (isOver) { tableBorderColor = 'var(--purple-mid)'; tableBg = 'var(--purple-light)' }
+  if (flash) { tableBorderColor = 'var(--success)'; tableBg = '#dcfce7' }
+  else if (isOver) { tableBorderColor = 'var(--purple-mid)'; tableBg = 'var(--purple-light)' }
   else if (hasViolation) { tableBorderColor = 'var(--danger)'; tableBg = '#FFF0F0' }
   else if (isFull) { tableBorderColor = '#9CA3AF'; tableBg = 'var(--silver-light)' }
   else if (table.isLocked) { tableBorderColor = 'var(--silver-dark)'; tableBg = 'var(--silver-light)' }
@@ -221,8 +225,38 @@ export default function TableCard({ table, isOver = false, onClick, droppablePro
       </div>
 
       {/* Label */}
-      <div style={{ textAlign: 'center', marginTop: 4 }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' }}>{table.name}</div>
+      <div style={{ textAlign: 'center', marginTop: 4 }} onClick={(e) => e.stopPropagation()}>
+        {editingName ? (
+          <input
+            autoFocus
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={() => {
+              const trimmed = nameValue.trim()
+              if (trimmed) updateTable(table.id, { name: trimmed })
+              else setNameValue(table.name)
+              setEditingName(false)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.target.blur()
+              if (e.key === 'Escape') { setNameValue(table.name); setEditingName(false) }
+            }}
+            style={{
+              fontSize: '0.8rem', fontWeight: 600, textAlign: 'center',
+              border: 'none', borderBottom: '1.5px solid var(--purple-mid)',
+              background: 'transparent', outline: 'none', width: '100%',
+              color: 'var(--text)',
+            }}
+          />
+        ) : (
+          <div
+            title="Click to rename"
+            onClick={() => setEditingName(true)}
+            style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', cursor: 'text' }}
+          >
+            {table.name}
+          </div>
+        )}
         <div style={{
           fontSize: '0.7rem',
           color: hasViolation ? 'var(--danger)' : isFull ? 'var(--text-muted)' : isEmpty ? '#CBD5E1' : 'var(--text-muted)',
@@ -230,7 +264,7 @@ export default function TableCard({ table, isOver = false, onClick, droppablePro
         }}>
           {hasViolation ? '⚠ conflict' : isFull ? `Full (${table.seatCount})` : `${seatedGuests.length}/${table.seatCount} seats`}
         </div>
-      </div>
+      </div>  {/* end label */}
     </div>
   )
 }

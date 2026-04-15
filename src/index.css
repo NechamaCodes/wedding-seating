@@ -93,7 +93,14 @@ h1, h2, h3 {
   color: var(--text);
 }
 
-/* Step headings in the SetupView use .serif-heading */
-.serif-heading {
-  font-family: 'Playfair Display', Georgia, serif;
+/* Mobile layout helpers */
+@media (max-width: 640px) {
+  .desktop-only { display: none !important; }
+  .mobile-stack { flex-direction: column !important; }
+  .mobile-full { width: 100% !important; }
+  .mobile-small-text { font-size: 0.75rem !important; }
+}
+
+@media (min-width: 641px) {
+  .mobile-only { display: none !important; }
 }

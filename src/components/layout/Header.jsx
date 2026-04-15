@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import useStore from '../../store/useStore'
 import Button from '../ui/Button'
 import { exportSeatingPDF } from '../../utils/exportPDF'
@@ -6,10 +6,10 @@ import { exportSeatingPDF } from '../../utils/exportPDF'
 const TABS = [
   { id: 'setup',   label: 'Setup' },
   { id: 'seating', label: 'Seating' },
-  { id: 'graph',   label: 'Connections' },
+  { id: 'graph',   label: 'Guest Map' },
 ]
 
-export default function Header({ user, onSignOut }) {
+export default function Header({ user, onSignOut, saveStatus = 'idle' }) {
   const activeView = useStore((s) => s.activeView)
   const setActiveView = useStore((s) => s.setActiveView)
   const clearAll = useStore((s) => s.clearAll)
@@ -18,6 +18,8 @@ export default function Header({ user, onSignOut }) {
   const guests = useStore((s) => s.guests)
   const tables = useStore((s) => s.tables)
   const historyLength = useStore((s) => s._history.length)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
   useEffect(() => {
     function handleKeyDown(e) {
@@ -30,13 +32,20 @@ export default function Header({ user, onSignOut }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, canUndo])
 
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   function handleClear() {
+    setMenuOpen(false)
     const input = window.prompt(
       'This will permanently delete all guests, tables, and constraints.\n\nType DELETE to confirm:'
     )
-    if (input?.trim().toUpperCase() === 'DELETE') {
-      clearAll()
-    }
+    if (input?.trim().toUpperCase() === 'DELETE') clearAll()
   }
 
   function handleExport() {
@@ -58,6 +67,7 @@ export default function Header({ user, onSignOut }) {
       top: 0,
       zIndex: 100,
       boxShadow: 'var(--shadow-sm)',
+      flexShrink: 0,
     }}>
       {/* Logo / title */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
@@ -74,7 +84,7 @@ export default function Header({ user, onSignOut }) {
       </div>
 
       {/* Tab bar */}
-      <nav style={{ display: 'flex', gap: '0.25rem' }}>
+      <nav style={{ display: 'flex', gap: '0.1rem', flex: 1, justifyContent: 'center' }}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -100,14 +110,25 @@ export default function Header({ user, onSignOut }) {
       </nav>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+        {/* Save status */}
+        {saveStatus !== 'idle' && (
+          <span style={{
+            fontSize: '0.72rem',
+            color: saveStatus === 'error' ? 'var(--danger)' : saveStatus === 'saving' ? 'var(--text-muted)' : 'var(--success)',
+          }}>
+            {saveStatus === 'saving' && '⟳ Saving…'}
+            {saveStatus === 'saved' && '✓ Saved'}
+            {saveStatus === 'error' && '✗ Save failed'}
+          </span>
+        )}
+
+        {/* Undo */}
         <button
           onClick={() => canUndoNow && undo()}
           disabled={!canUndoNow}
           title={canUndoNow ? 'Undo last action (⌘Z)' : 'Nothing to undo'}
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.3rem',
+            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
             padding: '0.3rem 0.6rem',
             background: canUndoNow ? 'var(--surface)' : 'transparent',
             border: `1.5px solid ${canUndoNow ? 'var(--border)' : 'transparent'}`,
@@ -133,60 +154,76 @@ export default function Header({ user, onSignOut }) {
           📄 Export PDF
         </Button>
 
-        <button
-          onClick={handleClear}
-          title="Reset all data"
-          style={{
-            padding: '0.3rem 0.6rem',
-            background: 'transparent',
-            border: 'none',
-            borderRadius: 'var(--radius)',
-            color: 'var(--text-muted)',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            opacity: 0.6,
-            transition: 'opacity 0.15s, color 0.15s',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--danger)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.color = 'var(--text-muted)' }}
-        >
-          Reset
-        </button>
+        {/* ⋮ overflow menu */}
+        <div ref={menuRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            title="More options"
+            style={{
+              width: 32, height: 32,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: menuOpen ? 'var(--surface-hover)' : 'transparent',
+              border: '1.5px solid transparent',
+              borderRadius: 'var(--radius)',
+              color: 'var(--text-muted)',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            ⋮
+          </button>
 
-        {user && (
-          <>
-            <div style={{ width: '1px', height: '1.2rem', background: 'var(--border)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              {user.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt=""
-                  style={{ width: 26, height: 26, borderRadius: '50%', border: '1.5px solid var(--border)' }}
-                />
-              ) : (
-                <div style={{
-                  width: 26, height: 26, borderRadius: '50%',
-                  background: 'var(--purple-light)', color: 'var(--purple-dark)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.7rem', fontWeight: 700,
-                }}>
-                  {(user.user_metadata?.name || user.email || '?')[0].toUpperCase()}
-                </div>
+          {menuOpen && (
+            <div style={{
+              position: 'absolute', right: 0, top: '110%',
+              background: 'var(--surface)',
+              border: '1.5px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              boxShadow: 'var(--shadow)',
+              minWidth: 180,
+              zIndex: 200,
+              overflow: 'hidden',
+            }}>
+              {user && (
+                <>
+                  <div style={{
+                    padding: '0.6rem 0.85rem',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    borderBottom: '1px solid var(--border)',
+                  }}>
+                    {user.user_metadata?.avatar_url ? (
+                      <img src={user.user_metadata.avatar_url} alt="" style={{ width: 22, height: 22, borderRadius: '50%' }} />
+                    ) : (
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--purple-light)', color: 'var(--purple-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
+                        {(user.user_metadata?.name || user.email || '?')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.user_metadata?.name || user.email}
+                    </span>
+                  </div>
+                  <button onClick={() => { setMenuOpen(false); onSignOut() }} style={menuItemStyle}>
+                    Sign out
+                  </button>
+                  <div style={{ height: '1px', background: 'var(--border)' }} />
+                </>
               )}
-              <button
-                onClick={onSignOut}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '0.75rem', color: 'var(--text-muted)', padding: 0,
-                }}
-                title="Sign out"
-              >
-                Sign out
+              <button onClick={handleClear} style={{ ...menuItemStyle, color: 'var(--danger)' }}>
+                🗑 Reset all data…
               </button>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </header>
   )
+}
+
+const menuItemStyle = {
+  display: 'block', width: '100%', textAlign: 'left',
+  padding: '0.55rem 0.85rem',
+  background: 'none', border: 'none', cursor: 'pointer',
+  fontSize: '0.82rem', color: 'var(--text)',
+  transition: 'background 0.1s',
 }

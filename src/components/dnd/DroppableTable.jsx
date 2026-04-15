@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core'
 import TableCard from '../tables/TableCard'
 
-export default function DroppableTable({ table, onClickInfo }) {
+export default function DroppableTable({ table, onClickInfo, flash = false, zoom = 1 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `table-${table.id}`,
     data: { tableId: table.id },
@@ -12,6 +12,8 @@ export default function DroppableTable({ table, onClickInfo }) {
       <TableCard
         table={table}
         isOver={isOver}
+        flash={flash}
+        zoom={zoom}
         onClick={onClickInfo}
       />
     </div>

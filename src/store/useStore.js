@@ -248,6 +248,13 @@ const useStore = create((set, get) => ({
       return next
     }),
 
+  reorderTables: (newOrder) =>
+    set((s) => {
+      const next = { tables: newOrder }
+      saveState({ ...s, ...next })
+      return next
+    }),
+
   // --- Supabase sync ---
   // Called once after loading chart data from Supabase for authenticated users
   _setFullState: ({ guests, tables, constraints, groups }) => {

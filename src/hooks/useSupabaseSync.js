@@ -1,11 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import useStore from '../store/useStore'
 
 /**
  * Syncs the Zustand store to Supabase when a user is authenticated.
- * - On sign-in: loads the user's chart from Supabase (overrides localStorage)
- * - On every state change: debounced upsert to Supabase
+ * Returns saveStatus: 'idle' | 'saving' | 'saved' | 'error'
  */
 export function useSupabaseSync(user) {
   const _setFullState = useStore((s) => s._setFullState)
@@ -15,7 +14,9 @@ export function useSupabaseSync(user) {
   const groups = useStore((s) => s.groups)
 
   const syncTimeout = useRef(null)
+  const savedTimeout = useRef(null)
   const initialLoadDone = useRef(false)
+  const [saveStatus, setSaveStatus] = useState('idle')
 
   // Load chart from Supabase when user signs in
   useEffect(() => {
@@ -49,9 +50,12 @@ export function useSupabaseSync(user) {
   useEffect(() => {
     if (!supabase || !user || !initialLoadDone.current) return
 
+    setSaveStatus('saving')
     clearTimeout(syncTimeout.current)
+    clearTimeout(savedTimeout.current)
+
     syncTimeout.current = setTimeout(async () => {
-      await supabase.from('charts').upsert({
+      const { error } = await supabase.from('charts').upsert({
         user_id: user.id,
         guests,
         tables,
@@ -59,8 +63,20 @@ export function useSupabaseSync(user) {
         groups,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+
+      if (error) {
+        setSaveStatus('error')
+      } else {
+        setSaveStatus('saved')
+        savedTimeout.current = setTimeout(() => setSaveStatus('idle'), 2000)
+      }
     }, 1200)
 
-    return () => clearTimeout(syncTimeout.current)
+    return () => {
+      clearTimeout(syncTimeout.current)
+      clearTimeout(savedTimeout.current)
+    }
   }, [guests, tables, constraints, groups, user?.id])
+
+  return { saveStatus }
 }

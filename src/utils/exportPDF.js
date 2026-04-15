@@ -251,7 +251,8 @@ export function exportSeatingPDF(guests, tables) {
     doc.text(`Page ${p} of ${totalPages}`, PW - margin, PH - 3, { align: 'right' })
   }
 
-  doc.save('wedding-seating-chart.pdf')
+  const dateStr2 = new Date().toISOString().slice(0, 10)
+  doc.save(`wedding-seating-${dateStr2}.pdf`)
 }
 
 function drawPageHeader(doc, PW, margin) {

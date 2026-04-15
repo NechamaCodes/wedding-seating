@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import useStore from '../../store/useStore'
 import GuestCard from './GuestCard'
 import GuestForm from './GuestForm'
@@ -8,11 +8,14 @@ import Button from '../ui/Button'
 export default function GuestList({ draggable = false, DraggableWrapper, compact = false }) {
   const guests = useStore((s) => s.guests)
   const groups = useStore((s) => s.groups)
+  const addGuest = useStore((s) => s.addGuest)
   const [editId, setEditId] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
   const [filter, setFilter] = useState('')
   const [groupFilter, setGroupFilter] = useState('all')
-  const [seatedOpen, setSeatedOpen] = useState(false)  // collapsed by default
+  const [seatedOpen, setSeatedOpen] = useState(false)
+  const [quickName, setQuickName] = useState('')
+  const quickInputRef = useRef(null)
 
   const filtered = guests.filter((g) => {
     const matchName = g.name.toLowerCase().includes(filter.toLowerCase())
@@ -103,9 +106,25 @@ export default function GuestList({ draggable = false, DraggableWrapper, compact
       </div>
 
       {!compact && (
-        <Button variant="primary" onClick={() => setShowAdd(true)} style={{ width: '100%' }}>
-          + Add guest
-        </Button>
+        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+          <input
+            ref={quickInputRef}
+            value={quickName}
+            onChange={(e) => setQuickName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && quickName.trim()) {
+                addGuest({ name: quickName.trim() })
+                setQuickName('')
+                quickInputRef.current?.focus()
+              }
+            }}
+            placeholder="Quick add — type name, press Enter"
+            style={{ flex: 1, fontSize: '0.82rem' }}
+          />
+          <Button variant="secondary" size="sm" onClick={() => setShowAdd(true)} title="Add with full details">
+            ⋯
+          </Button>
+        </div>
       )}
 
       {showAdd && (
