@@ -26,14 +26,18 @@ export function useAuth() {
   }, [])
 
   async function signInWithGoogle() {
-    if (!supabase) return
-    await supabase.auth.signInWithOAuth({
+    if (!supabase) {
+      alert('Sign-in is not configured. Please check that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your Vercel environment variables.')
+      return
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/`,
         queryParams: { prompt: 'select_account' },
       },
     })
+    if (error) alert(`Sign-in error: ${error.message}`)
   }
 
   async function signOut() {
