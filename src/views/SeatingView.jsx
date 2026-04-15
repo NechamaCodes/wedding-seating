@@ -22,7 +22,7 @@ function DroppableSidebar({ children }) {
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
-        overflowY: 'auto',
+        overflow: 'hidden',
         background: isOver ? 'var(--surface-hover)' : 'var(--surface)',
         transition: 'background 0.15s',
         outline: isOver ? '2px dashed var(--purple-mid)' : 'none',
