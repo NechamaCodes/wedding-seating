@@ -6,6 +6,12 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Clear OAuth error params from URL without reloading
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error_code') === 'bad_oauth_callback') {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+
     if (!supabase) {
       setLoading(false)
       return

@@ -8,5 +8,12 @@ if (!url || !key) {
 }
 
 export const supabase = url && key
-  ? createClient(url, key, { auth: { flowType: 'implicit' } })
+  ? createClient(url, key, {
+      auth: {
+        flowType: 'pkce',
+        detectSessionInUrl: true,
+        persistSession: true,
+        storageKey: 'wedding-seating-auth',
+      },
+    })
   : null
