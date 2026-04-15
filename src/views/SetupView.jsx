@@ -38,7 +38,7 @@ function Section({ number, title, subtitle, children, scrollable = false }) {
       boxShadow: 'var(--shadow-sm)',
       display: 'flex',
       flexDirection: 'column',
-      ...(scrollable ? { minHeight: 0 } : {}),
+      ...(scrollable ? { flex: 1, minHeight: 0 } : {}),
     }}>
       <StepHeader number={number} title={title} subtitle={subtitle} />
       <div style={scrollable ? { flex: 1, minHeight: 0, overflowY: 'auto' } : {}}>
@@ -112,17 +112,16 @@ export default function SetupView() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr',
         gap: '1.25rem',
         maxWidth: 1200,
         margin: '0 auto',
         width: '100%',
         flex: 1,
         minHeight: 0,
-        alignItems: 'start',
-        gridTemplateRows: '1fr',
       }}>
         {/* Left column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', minHeight: 0, height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <Section
             number={1}
             title="Add Guests"
