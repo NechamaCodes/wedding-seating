@@ -135,10 +135,10 @@ export default function SeatingView() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <DroppableSidebar>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
               Guests
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--bg)', borderRadius: 'var(--radius)', padding: '0.35rem 0.5rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--bg)', borderRadius: 'var(--radius)', padding: '0.35rem 0.5rem', flexShrink: 0 }}>
               Drag to seat · drag back to unassign
             </div>
             <GuestList draggable compact DraggableWrapper={DraggableGuest} />

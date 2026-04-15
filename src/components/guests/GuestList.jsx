@@ -31,7 +31,7 @@ export default function GuestList({ draggable = false, DraggableWrapper, compact
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1, minHeight: 0 }}>
       {/* Filters */}
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <input
