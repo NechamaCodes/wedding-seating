@@ -38,7 +38,7 @@ function Section({ number, title, subtitle, children, scrollable = false }) {
       boxShadow: 'var(--shadow-sm)',
     }}>
       <StepHeader number={number} title={title} subtitle={subtitle} />
-      <div style={scrollable ? { maxHeight: 'calc(100vh - 260px)', overflowY: 'auto' } : {}}>
+      <div style={scrollable ? { height: 'calc(100vh - 260px)', display: 'flex', flexDirection: 'column' } : {}}>
         {children}
       </div>
     </div>
