@@ -28,7 +28,7 @@ function StepHeader({ number, title, subtitle }) {
   )
 }
 
-function Section({ number, title, subtitle, children }) {
+function Section({ number, title, subtitle, children, scrollable = false }) {
   return (
     <div style={{
       background: 'var(--surface)',
@@ -36,9 +36,14 @@ function Section({ number, title, subtitle, children }) {
       borderRadius: 'var(--radius-lg)',
       padding: '1.25rem',
       boxShadow: 'var(--shadow-sm)',
+      display: 'flex',
+      flexDirection: 'column',
+      ...(scrollable ? { minHeight: 0 } : {}),
     }}>
       <StepHeader number={number} title={title} subtitle={subtitle} />
-      {children}
+      <div style={scrollable ? { flex: 1, minHeight: 0, overflowY: 'auto' } : {}}>
+        {children}
+      </div>
     </div>
   )
 }
@@ -59,7 +64,9 @@ export default function SetupView() {
   return (
     <div style={{
       flex: 1,
-      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
       padding: '1.25rem',
     }}>
       {/* Onboarding banner — only shown on first visit */}
@@ -109,14 +116,18 @@ export default function SetupView() {
         maxWidth: 1200,
         margin: '0 auto',
         width: '100%',
+        flex: 1,
+        minHeight: 0,
         alignItems: 'start',
+        gridTemplateRows: '1fr',
       }}>
         {/* Left column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', minHeight: 0, height: '100%' }}>
           <Section
             number={1}
             title="Add Guests"
             subtitle={guests.length > 0 ? `${guests.length} guest${guests.length > 1 ? 's' : ''} added` : 'Add guests one by one or import a CSV'}
+            scrollable
           >
             <div style={{ marginBottom: '0.75rem' }}>
               <Button
@@ -145,7 +156,7 @@ export default function SetupView() {
         </div>
 
         {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', minHeight: 0, overflowY: 'auto' }}>
           <Section
             number={2}
             title="Configure Tables"
