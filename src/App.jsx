@@ -13,7 +13,7 @@ function AppContent({ user, signOut }) {
   useSupabaseSync(user)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <Header user={user} onSignOut={signOut} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeView === 'setup'   && <SetupView />}
