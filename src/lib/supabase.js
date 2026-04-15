@@ -7,4 +7,6 @@ if (!url || !key) {
   console.warn('Supabase env vars not set — running in localStorage-only mode')
 }
 
-export const supabase = url && key ? createClient(url, key) : null
+export const supabase = url && key
+  ? createClient(url, key, { auth: { flowType: 'implicit' } })
+  : null
