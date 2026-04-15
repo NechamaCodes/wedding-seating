@@ -5,15 +5,13 @@ import Header from './components/layout/Header'
 import SetupView from './views/SetupView'
 import SeatingView from './views/SeatingView'
 import GraphView from './views/GraphView'
-import SignInPage from './components/auth/SignInPage'
-
-function AppContent({ user, signOut }) {
+function AppContent({ user, signOut, signIn }) {
   const activeView = useStore((s) => s.activeView)
   const { saveStatus } = useSupabaseSync(user)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <Header user={user} onSignOut={signOut} saveStatus={saveStatus} />
+      <Header user={user} onSignOut={signOut} onSignIn={signIn} saveStatus={saveStatus} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeView === 'setup'   && <SetupView />}
         {activeView === 'seating' && <SeatingView />}
@@ -26,25 +24,6 @@ function AppContent({ user, signOut }) {
 export default function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
 
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--bg)',
-        color: 'var(--text-muted)',
-        fontSize: '0.9rem',
-      }}>
-        Loading…
-      </div>
-    )
-  }
-
-  if (!user) {
-    return <SignInPage onSignIn={signInWithGoogle} />
-  }
-
-  return <AppContent user={user} signOut={signOut} />
+  // Always show the app — sign-in is optional (for cloud sync only)
+  return <AppContent user={loading ? null : user} signOut={signOut} signIn={signInWithGoogle} />
 }

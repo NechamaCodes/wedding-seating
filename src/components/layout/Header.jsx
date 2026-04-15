@@ -9,7 +9,7 @@ const TABS = [
   { id: 'graph',   label: 'Guest Map' },
 ]
 
-export default function Header({ user, onSignOut, saveStatus = 'idle' }) {
+export default function Header({ user, onSignOut, onSignIn, saveStatus = 'idle' }) {
   const activeView = useStore((s) => s.activeView)
   const setActiveView = useStore((s) => s.setActiveView)
   const clearAll = useStore((s) => s.clearAll)
@@ -185,7 +185,7 @@ export default function Header({ user, onSignOut, saveStatus = 'idle' }) {
               zIndex: 200,
               overflow: 'hidden',
             }}>
-              {user && (
+              {user ? (
                 <>
                   <div style={{
                     padding: '0.6rem 0.85rem',
@@ -206,6 +206,16 @@ export default function Header({ user, onSignOut, saveStatus = 'idle' }) {
                   <button onClick={() => { setMenuOpen(false); onSignOut() }} style={menuItemStyle}>
                     Sign out
                   </button>
+                  <div style={{ height: '1px', background: 'var(--border)' }} />
+                </>
+              ) : (
+                <>
+                  <button onClick={() => { setMenuOpen(false); onSignIn?.() }} style={menuItemStyle}>
+                    🔐 Sign in with Google
+                  </button>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.85rem 0.6rem', lineHeight: 1.4 }}>
+                    Sign in to sync your seating chart to the cloud
+                  </div>
                   <div style={{ height: '1px', background: 'var(--border)' }} />
                 </>
               )}
