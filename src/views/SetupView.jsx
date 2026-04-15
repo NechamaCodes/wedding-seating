@@ -36,12 +36,9 @@ function Section({ number, title, subtitle, children, scrollable = false }) {
       borderRadius: 'var(--radius-lg)',
       padding: '1.25rem',
       boxShadow: 'var(--shadow-sm)',
-      display: 'flex',
-      flexDirection: 'column',
-      ...(scrollable ? { flex: 1, minHeight: 0 } : {}),
     }}>
       <StepHeader number={number} title={title} subtitle={subtitle} />
-      <div style={scrollable ? { flex: 1, minHeight: 0, overflowY: 'auto' } : {}}>
+      <div style={scrollable ? { maxHeight: 'calc(100vh - 260px)', overflowY: 'auto' } : {}}>
         {children}
       </div>
     </div>
@@ -64,9 +61,7 @@ export default function SetupView() {
   return (
     <div style={{
       flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
+      overflowY: 'auto',
       padding: '1.25rem',
     }}>
       {/* Onboarding banner — only shown on first visit */}
@@ -112,16 +107,14 @@ export default function SetupView() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gridTemplateRows: '1fr',
         gap: '1.25rem',
         maxWidth: 1200,
         margin: '0 auto',
         width: '100%',
-        flex: 1,
-        minHeight: 0,
+        alignItems: 'start',
       }}>
         {/* Left column */}
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <Section
             number={1}
             title="Add Guests"
@@ -155,7 +148,7 @@ export default function SetupView() {
         </div>
 
         {/* Right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', minHeight: 0, overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <Section
             number={2}
             title="Configure Tables"
