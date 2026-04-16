@@ -6,9 +6,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Clear any auth error/token params from URL after redirect
+    // Clear OAuth error params from URL (but NOT ?code= — Supabase needs that to sign in)
     const params = new URLSearchParams(window.location.search)
-    if (params.has('error_code') || params.has('code')) {
+    if (params.has('error_code')) {
       window.history.replaceState({}, '', window.location.pathname)
     }
 
