@@ -24,11 +24,6 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
-      // If this is a popup completing the OAuth flow, close it
-      if (event === 'SIGNED_IN' && window.opener && !window.opener.closed) {
-        window.opener.postMessage('oauth-complete', window.location.origin)
-        window.close()
-      }
     })
 
     // Listen for the popup completing sign-in
@@ -46,6 +41,14 @@ export function useAuth() {
       window.removeEventListener('message', handleMessage)
     }
   }, [])
+
+  // If this tab is a popup completing the OAuth flow, close it once loading finishes
+  useEffect(() => {
+    if (!loading && window.opener) {
+      try { window.opener.postMessage('oauth-complete', window.location.origin) } catch (_) {}
+      window.close()
+    }
+  }, [loading])
 
   async function signInWithGoogle() {
     if (!supabase) {
