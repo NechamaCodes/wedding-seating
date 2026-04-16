@@ -262,7 +262,14 @@ const useStore = create((set, get) => ({
       const guests = s.guests.map((g) =>
         assignments[g.id] !== undefined ? { ...g, tableId: assignments[g.id] } : g
       )
-      const next = { guests, _history: [...s._history.slice(-MAX_HISTORY), snapshot(s)] }
+      const tables = s.tables.map((t) => {
+        const added = Object.entries(assignments)
+          .filter(([, tid]) => tid === t.id)
+          .map(([gid]) => gid)
+        const existing = t.guestIds.filter((id) => !assignments[id])
+        return { ...t, guestIds: [...existing, ...added] }
+      })
+      const next = { guests, tables, _history: [...s._history.slice(-MAX_HISTORY), snapshot(s)] }
       saveState({ ...s, ...next })
       return next
     }),
