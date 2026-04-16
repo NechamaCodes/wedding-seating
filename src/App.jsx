@@ -22,8 +22,8 @@ function AppContent({ user, signOut, signIn }) {
 }
 
 export default function App() {
-  const { user, loading, signInWithGoogle, signOut } = useAuth()
+  const { user, loading, signInWithEmail, signOut } = useAuth()
 
   // Always show the app — sign-in is optional (for cloud sync only)
-  return <AppContent user={loading ? null : user} signOut={signOut} signIn={signInWithGoogle} />
+  return <AppContent user={loading ? null : user} signOut={signOut} signIn={signInWithEmail} />
 }

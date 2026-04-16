@@ -19,6 +19,10 @@ export default function Header({ user, onSignOut, onSignIn, saveStatus = 'idle' 
   const tables = useStore((s) => s.tables)
   const historyLength = useStore((s) => s._history.length)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [signInOpen, setSignInOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
+  const [signInLoading, setSignInLoading] = useState(false)
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -210,12 +214,9 @@ export default function Header({ user, onSignOut, onSignIn, saveStatus = 'idle' 
                 </>
               ) : (
                 <>
-                  <button onClick={() => { setMenuOpen(false); onSignIn?.() }} style={menuItemStyle}>
-                    🔐 Sign in with Google
+                  <button onClick={() => { setMenuOpen(false); setSignInOpen(true); setEmailSent(false); setEmail('') }} style={menuItemStyle}>
+                    🔐 Sign in to sync data
                   </button>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', padding: '0 0.85rem 0.6rem', lineHeight: 1.4 }}>
-                    Sign in to sync your seating chart to the cloud
-                  </div>
                   <div style={{ height: '1px', background: 'var(--border)' }} />
                 </>
               )}
@@ -226,8 +227,77 @@ export default function Header({ user, onSignOut, onSignIn, saveStatus = 'idle' 
           )}
         </div>
       </div>
+      {signInOpen && (
+        <div
+          onClick={() => setSignInOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
+              padding: '1.75rem', width: 340, boxShadow: 'var(--shadow-lg)',
+              display: 'flex', flexDirection: 'column', gap: '1rem',
+            }}
+          >
+            <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--purple-dark)' }}>
+              💍 Sign in to sync your data
+            </div>
+            {emailSent ? (
+              <>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
+                  Check your email — we sent a magic link to <strong>{email}</strong>. Click it to sign in.
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => setSignInOpen(false)}>Done</Button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Enter your email and we'll send you a sign-in link. No password needed.
+                </div>
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={async (e) => { if (e.key === 'Enter') await handleSendLink() }}
+                  autoFocus
+                />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSendLink}
+                    disabled={signInLoading || !email.includes('@')}
+                    style={{ flex: 1 }}
+                  >
+                    {signInLoading ? 'Sending…' : 'Send magic link'}
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => setSignInOpen(false)}>Cancel</Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   )
+
+  async function handleSendLink() {
+    if (!email.includes('@')) return
+    setSignInLoading(true)
+    const { error } = await onSignIn(email)
+    setSignInLoading(false)
+    if (error) {
+      alert(`Error: ${error.message}`)
+    } else {
+      setEmailSent(true)
+    }
+  }
 }
 
 const menuItemStyle = {
