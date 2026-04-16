@@ -56,17 +56,13 @@ export function useAuth() {
       return
     }
 
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    if (!clientId) {
+      alert('VITE_GOOGLE_CLIENT_ID is not set. Please add it to your Vercel environment variables.')
+      return
+    }
+
     try {
-      // Get the OAuth URL just to extract the Google client_id
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { skipBrowserRedirect: true, redirectTo: `${window.location.origin}/` },
-      })
-      if (error || !data?.url) throw error || new Error('No OAuth URL returned')
-
-      const clientId = new URL(data.url).searchParams.get('client_id')
-      if (!clientId) throw new Error('Could not extract Google client ID')
-
       await loadGoogleScript()
 
       const { nonce, hashedNonce } = await generateNonce()
