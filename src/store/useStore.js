@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
+import { autoAssign } from '../utils/autoAssign'
 
 const STORAGE_KEY = 'wedding-seating-v1'
 const MAX_HISTORY = 30
@@ -251,6 +252,17 @@ const useStore = create((set, get) => ({
   reorderTables: (newOrder) =>
     set((s) => {
       const next = { tables: newOrder }
+      saveState({ ...s, ...next })
+      return next
+    }),
+
+  autoAssignGuests: () =>
+    set((s) => {
+      const assignments = autoAssign(s.guests, s.tables, s.constraints)
+      const guests = s.guests.map((g) =>
+        assignments[g.id] !== undefined ? { ...g, tableId: assignments[g.id] } : g
+      )
+      const next = { guests, _history: [...s._history.slice(-MAX_HISTORY), snapshot(s)] }
       saveState({ ...s, ...next })
       return next
     }),

@@ -40,6 +40,7 @@ export default function SeatingView() {
   const tables = useStore((s) => s.tables)
   const assignGuestToTable = useStore((s) => s.assignGuestToTable)
   const unassignGuest = useStore((s) => s.unassignGuest)
+  const autoAssignGuests = useStore((s) => s.autoAssignGuests)
   const state = useStore()
 
   const [activeGuest, setActiveGuest] = useState(null)
@@ -206,6 +207,26 @@ export default function SeatingView() {
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {seatedGuests} / {totalGuests} seated
               </span>
+              {seatedGuests < totalGuests && tables.length > 0 && (
+                <button
+                  onClick={autoAssignGuests}
+                  style={{
+                    flexShrink: 0,
+                    padding: '0.3rem 0.75rem',
+                    background: 'var(--purple-mid)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="Automatically seat all unassigned guests based on groups and rules"
+                >
+                  ✨ Auto-assign
+                </button>
+              )}
             </div>
           )}
 
