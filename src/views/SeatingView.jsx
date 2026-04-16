@@ -41,6 +41,7 @@ export default function SeatingView() {
   const assignGuestToTable = useStore((s) => s.assignGuestToTable)
   const unassignGuest = useStore((s) => s.unassignGuest)
   const autoAssignGuests = useStore((s) => s.autoAssignGuests)
+  const unassignAll = useStore((s) => s.unassignAll)
   const state = useStore()
 
   const [activeGuest, setActiveGuest] = useState(null)
@@ -225,6 +226,26 @@ export default function SeatingView() {
                   title="Automatically seat all unassigned guests based on groups and rules"
                 >
                   ✨ Auto-assign
+                </button>
+              )}
+              {seatedGuests > 0 && (
+                <button
+                  onClick={unassignAll}
+                  style={{
+                    flexShrink: 0,
+                    padding: '0.3rem 0.75rem',
+                    background: 'none',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title="Remove all guests from their tables"
+                >
+                  Unseat all
                 </button>
               )}
             </div>

@@ -256,6 +256,15 @@ const useStore = create((set, get) => ({
       return next
     }),
 
+  unassignAll: () =>
+    set((s) => {
+      const guests = s.guests.map((g) => ({ ...g, tableId: null }))
+      const tables = s.tables.map((t) => ({ ...t, guestIds: [] }))
+      const next = { guests, tables, _history: [...s._history.slice(-MAX_HISTORY), snapshot(s)] }
+      saveState({ ...s, ...next })
+      return next
+    }),
+
   autoAssignGuests: () =>
     set((s) => {
       const assignments = autoAssign(s.guests, s.tables, s.constraints)
